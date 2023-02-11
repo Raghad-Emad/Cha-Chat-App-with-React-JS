@@ -1,56 +1,78 @@
-import './messenger.css';
-import Topbar from '../components/topbar/Topbar';
-import Conversation from '../components/conversations/Conversation';
-import Message from '../components/message/Message';
-import ChatOnline from '../components/chatOnline/ChatOnline';
+import "./messenger.css";
+import Topbar from "../components/topbar/Topbar";
+import Conversation from "../components/conversations/Conversation";
+import Message from "../components/message/Message";
+import ChatOnline from "../components/chatOnline/ChatOnline";
+import { useContext, useEffect, useState } from "react";
+import { AuthContext } from "../context/AuthContext";
+import axios from "axios";
 
-export default function Messenger() {
-    return (
-        <>
-        <Topbar/>
-        <div className='messenger'>
-            
-            <div className='chatMenu'>
-                <div className="chatMenuWrapper">
-                    <input type="text" name="" id="" placeholder='Search for friends' className='chatMenuInput'/>
-                    <Conversation />
-                    <Conversation />
-                    <Conversation />
-                    <Conversation />
-                </div>
-            </div>
+export default function Messenger() { 
+  const [conversations, setConversations] = useState([]);
+  const { user } = useContext(AuthContext);
 
-            <div className='chatBox'>
-                <div className="chatBoxWrapper">
-                    <div className="chatBoxTop">
-                        <Message/>
-                        <Message own={true}/>
-                        <Message/>
-                        <Message/>
-                        <Message own={true}/>
-                        <Message/>
-                        <Message/>
-                        <Message own={true}/>
-                        <Message/>
-                    </div>
-                    <div className="chatBoxBottom">
-                        <textarea className='chatMessageInput' placeholder='write here ...'></textarea>
-                        <button className='chatSubmitButton'>
-                            Send
-                        </button>
-                    </div>
-                </div>
-            </div>
+  useEffect(() => {
+    const getConversations = async () => {
+      try {
+        const res = await axios.get("/conversations/" + user._id);
+        setConversations(res.data)
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    getConversations()
+  },[user._id]);
 
-            <div className='chatOnline'>
-                <div className="chatOnlineWrapper">
-                    <ChatOnline/>
-                    <ChatOnline/>
-                    <ChatOnline/>
-                </div>
-            </div>
-
+  return (
+    <>
+      <Topbar />
+      <div className="messenger">
+        <div className="chatMenu">
+          <div className="chatMenuWrapper">
+            <input
+              type="text"
+              name=""
+              id=""
+              placeholder="Search for friends"
+              className="chatMenuInput"
+            />
+            {conversations.map((c)=>(
+                <Conversation conversation = {c} currentUser = {user} />
+            ))}
+          </div>
         </div>
-        </>
-    )
+
+        <div className="chatBox">
+          <div className="chatBoxWrapper">
+            <div className="chatBoxTop">
+              <Message />
+              <Message own={true} />
+              <Message />
+              <Message />
+              <Message own={true} />
+              <Message />
+              <Message />
+              <Message own={true} />
+              <Message />
+            </div>
+            <div className="chatBoxBottom">
+              <textarea
+                className="chatMessageInput"
+                placeholder="write here ..."
+              ></textarea>
+              <button className="chatSubmitButton">Send</button>
+            </div>
+          </div>
+        </div>
+
+        <div className="chatOnline">
+          <div className="chatOnlineWrapper">
+            <ChatOnline />
+            <ChatOnline />
+            <ChatOnline />
+          </div>
+        </div>
+      </div>
+    </>
+  );
 }
