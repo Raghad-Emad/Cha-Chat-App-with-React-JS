@@ -1,6 +1,7 @@
 import "./message.css";
+import { format } from 'timeago.js'
 
-export default function Message({own}) {
+export default function Message({own , message}) {
   return (
     <div className={own ? 'message own' : 'message'}>
       <div className="messageTop">
@@ -10,10 +11,10 @@ export default function Message({own}) {
           alt="message img"
         />
         <p className="messageText">
-          Lorem, ipsum dolor sit amet consectetur adipisicing elit. 
+          {message.text} 
         </p>
       </div>
-      <div className="messageBottom">1 Hour ago</div>
+      <div className="messageBottom">{format(message.createdAt)}</div>
     </div>
   );
 }
