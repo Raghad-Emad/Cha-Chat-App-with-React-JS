@@ -13,6 +13,7 @@ export default function Messenger() {
   const [currentChat, setCurrentChat] = useState(null);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
+  const [arrivalMessage, setarrivalMessage] = useState(null);
   // const [socket, setSocket] = useState(null);
   const socket = useRef(io("ws://localhost:8900"));
   const { user } = useContext(AuthContext);
@@ -40,9 +41,20 @@ export default function Messenger() {
 
   useEffect(()=> {
     socket.current = io("ws://localhost:8900");
-  },[])
+    socket.current.on("getMessage" , data =>{
+      setarrivalMessage({
+        sender: data.senderId,
+        text: data.text,
+        createdAt: Date.now(),
+      })
+    })
+  },[]);
 
-
+  useEffect(()=>{
+    arrivalMessage &&
+    currentChat?.members.includes(arrivalMessage.sender) && 
+    setMessages(prev => [...prev,arrivalMessage])
+  },[arrivalMessage, currentChat])
 
   useEffect(() => {
     const getConversations = async () => {
@@ -76,6 +88,15 @@ export default function Messenger() {
       text: newMessage ,
       conversationId: currentChat._id,
     };
+
+    const receiverId = currentChat.members.find(member=> member !== user._id)
+
+    socket.current.emit("sendMessage",{
+      senderId: user._id,
+      receiverId,
+      text: newMessage,
+    })
+
     try {
       const res = await axios.post("/messages/" , message);
       setMessages([...messages , res.data])
